@@ -228,6 +228,40 @@ input:focus, select:focus {
     margin-bottom: 0.5rem;
 }
 
+/* Modal overlay */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.75);
+    z-index: 50;
+}
+
+.modal.hidden {
+    display: none !important;
+}
+
+.modal-content {
+    max-width: 480px;
+    width: 100%;
+}
+
+.profile-avatar-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.avatar-large {
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+    object-fit: cover;
+}
+
 .footer {
     padding: 1.5rem;
     text-align: center;
