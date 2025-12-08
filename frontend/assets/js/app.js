@@ -202,11 +202,22 @@ function renderBookings($container, bookings) {
         let actions = "";
 
         if (isStaffOrAdmin) {
-            actions = `<div class="list-item-actions">
-                <button class="btn small" onclick="updateBookingStatus(${b.id}, 'confirmed')">Confirm</button>
-                <button class="btn small danger" onclick="updateBookingStatus(${b.id}, 'cancelled')">Cancel</button>
-            </div>`;
+            // For staff/admin:
+            // - pending: show Confirm + Cancel
+            // - confirmed: only Cancel
+            // - cancelled: no buttons
+            if (b.status === "pending") {
+                actions = `<div class="list-item-actions">
+                    <button class="btn small" onclick="updateBookingStatus(${b.id}, 'confirmed')">Confirm</button>
+                    <button class="btn small danger" onclick="updateBookingStatus(${b.id}, 'cancelled')">Cancel</button>
+                </div>`;
+            } else if (b.status === "confirmed") {
+                actions = `<div class="list-item-actions">
+                    <button class="btn small danger" onclick="updateBookingStatus(${b.id}, 'cancelled')">Cancel</button>
+                </div>`;
+            }
         } else if (isUser && b.status !== "confirmed") {
+            // Users can cancel their own non-confirmed bookings
             actions = `<div class="list-item-actions">
                 <button class="btn small danger" onclick="updateBookingStatus(${b.id}, 'cancelled')">Cancel</button>
             </div>`;
@@ -230,7 +241,9 @@ function updateBookingStatus(id, status) {
         .then(() => {
             if (!currentUser) return;
             if (currentUser.role === "staff") {
+                // Refresh both staff "today" view and the All Bookings tab
                 loadTodayBookings();
+                loadAllBookings();
             } else {
                 loadAllBookings();
             }
@@ -369,8 +382,9 @@ $(function () {
         $("#modal-profile").removeClass("hidden");
     });
 
-    // All bookings search filter (admin & staff)
+    // All bookings search & status filter (admin & staff)
     $("#admin-bookings-search").on("input", applyBookingsFilter);
+    $("#admin-bookings-status-filter").on("change", applyBookingsFilter);
 
     // Close profile modal
     $("#btn-cancel-profile").on("click", () => {
