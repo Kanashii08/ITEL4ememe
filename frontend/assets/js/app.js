@@ -42,8 +42,10 @@ function updateNav() {
 }
 
 function fillProfileForm() {
+    // Safely handle cases where there is no logged-in user yet
     if (!currentUser) return;
     const form = document.getElementById("form-profile");
+    if (!form) return;
     form.first_name.value = currentUser.first_name || "";
     form.last_name.value = currentUser.last_name || "";
     form.email.value = currentUser.email || "";
