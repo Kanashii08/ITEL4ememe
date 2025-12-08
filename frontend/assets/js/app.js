@@ -276,22 +276,14 @@ function openRoleModal(userId, name, currentRole) {
 function closeRoleModal() {
     $("#modal-role").addClass("hidden");
 }
+
+function deleteUser(userId) {
     if (!confirm("Are you sure you want to delete this user?")) return;
     apiRequest(`users/${userId}`, { method: "DELETE" }).then(() => {
         loadUsers();
     }).catch((err) => {
         alert(err.message || "Failed to delete user");
     });
-}
-
-function fillProfileForm() {
-    const form = document.getElementById("form-profile");
-    if (!form) return;
-    form.first_name.value = currentUser.first_name;
-    form.last_name.value = currentUser.last_name;
-    form.email.value = currentUser.email;
-    form.avatar_url.value = currentUser.avatar_url;
-    $("#profile-avatar-preview").attr("src", currentUser.avatar_url);
 }
 
 $(function () {
