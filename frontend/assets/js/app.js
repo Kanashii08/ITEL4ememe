@@ -1,6 +1,3 @@
-Here is the complete [app.js](cci:7://file:///F:/.itel4FINALS/frontend/assets/js/app.js:0:0-0:0) you can paste into [f:\.itel4FINALS\frontend\assets\js\app.js](cci:7://file:///F:/.itel4FINALS/frontend/assets/js/app.js:0:0-0:0) (and then upload that file to GitHub by **uploading the file**, not pasting in the web editor):
-
-```javascript
 let authToken = null;
 let currentUser = null;
 
@@ -385,4 +382,3 @@ $(function () {
         });
     });
 });
-```
