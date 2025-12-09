@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Cafe - Cubicle Booking</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        // CORRECT URL for backend inside 'backend' folder
+        const API_BASE_URL = "https://moodleaands.muccs.site/backend/api";
+    </script>
+    <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">Book Cafe</div>
+        <nav id="nav-auth">
+            <button id="btn-show-login" class="btn primary">Login</button>
+            <button id="btn-show-register" class="btn ghost">Register</button>
+        </nav>
+        <nav id="nav-user" class="hidden">
+            <div class="user-info">
+                <img id="nav-avatar" class="avatar" src="assets/img/default-user.png" alt="avatar" />
+                <span id="nav-name"></span>
+                <span id="nav-role" class="badge"></span>
+            </div>
+            <button id="btn-profile" class="btn">Profile</button>
+            <button id="btn-logout" class="btn">Logout</button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="section-auth" class="card auth-card">
+            <h1>Welcome to Book Cafe</h1>
+            <p class="subtitle">Book a private cubicle by the hour. Unlimited books, unlimited soda, optional beer, and cozy naps.</p>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="login">Login</button>
+                <button class="tab-btn" data-tab="register">Register</button>
+            </div>
+
+            <div id="tab-login" class="tab active">
+                <form id="form-login">
+                    <label>Email
+                        <input type="email" name="email" required />
+                    </label>
+                    <label>Password
+                        <input type="password" name="password" required />
+                    </label>
+                    <button type="submit" class="btn primary full">Login</button>
+                </form>
+            </div>
+
+            <div id="tab-register" class="tab">
+                <form id="form-register">
+                    <div class="grid-2">
+                        <label>First name
+                            <input type="text" name="first_name" required />
+                        </label>
+                        <label>Last name
+                            <input type="text" name="last_name" required />
+                        </label>
+                    </div>
+                    <label>Email
+                        <input type="email" name="email" required />
+                    </label>
+                    <label>Password
+                        <input type="password" name="password" required minlength="6" />
+                    </label>
+                    <button type="submit" class="btn primary full">Create account</button>
+                </form>
+            </div>
+
+            <div id="auth-message" class="message hidden"></div>
+        </section>
+
+        <section id="section-dashboard" class="hidden">
+            <h2 id="dashboard-title">Dashboard</h2>
+            <p id="dashboard-subtitle" class="subtitle"></p>
+
+            <div id="dashboard-admin" class="role-panel hidden">
+                <div class="tabs dashboard-tabs">
+                    <button class="tab-btn active" data-panel="admin-cubicles">Cubicles</button>
+                    <button class="tab-btn" data-panel="admin-bookings">Bookings</button>
+                    <button class="tab-btn" data-panel="admin-users">Users</button>
+                </div>
+
+                <div id="admin-cubicles" class="panel-content active">
+                    <div class="card">
+                        <h4>Manage Cubicles</h4>
+                        <form id="form-create-cubicle" class="compact-form">
+                            <input type="text" name="name" placeholder="Cubicle name" required />
+                            <input type="text" name="description" placeholder="Short description" />
+                            <input type="number" name="hourly_rate" placeholder="Hourly rate (P)" min="0" step="0.01" required />
+                            <label class="inline">
+                                <input type="checkbox" name="has_beer" /> Beer available
+                            </label>
+                            <button type="submit" class="btn small primary">Add cubicle</button>
+                        </form>
+                        <div id="admin-cubicles-list" class="list"></div>
+                    </div>
+                </div>
+
+                <div id="admin-bookings" class="panel-content">
+                    <div class="card">
+                        <h4>All Bookings</h4>
+                        <div class="grid-2">
+                            <input type="text" id="admin-bookings-search" placeholder="Search by user, cubicle, status, or date" class="search-input" />
+                            <select id="admin-bookings-status-filter">
+                                <option value="">All statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div id="admin-bookings-list" class="list"></div>
+                    </div>
+                </div>
+
+                <div id="admin-users" class="panel-content">
+                    <div class="card">
+                        <h4>User Management</h4>
+                        <p class="hint">Change user roles or delete users. The primary admin cannot be deleted.</p>
+                        <div id="admin-users-list" class="list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dashboard-staff" class="role-panel hidden">
+                <div class="grid-2">
+                    <div class="card">
+                        <h4>Today's Bookings</h4>
+                        <div id="staff-bookings-list" class="list"></div>
+                    </div>
+                    <div class="card">
+                        <h4>Quick Lookup by Email</h4>
+                        <form id="form-staff-lookup" class="compact-form">
+                            <input type="email" name="email" placeholder="User email" required />
+                            <button type="submit" class="btn small">Find bookings</button>
+                        </form>
+                        <div id="staff-lookup-results" class="list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dashboard-user" class="role-panel hidden">
+                <div class="grid-2">
+                    <div class="card">
+                        <h4>Book a Cubicle</h4>
+                        <form id="form-create-booking" class="compact-form">
+                            <label>Cubicle
+                                <select name="cubicle_id" id="select-cubicle" required></select>
+                            </label>
+                            <label>Start time
+                                <input type="datetime-local" name="start_time" required />
+                            </label>
+                            <label>Duration (hours)
+                                <input type="number" name="duration" min="1" max="24" value="1" required />
+                            </label>
+                            <button type="submit" class="btn primary full">Book now</button>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h4>Your Bookings</h4>
+                        <div id="user-bookings-list" class="list"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Profile Modal -->
+    <div id="modal-profile" class="modal hidden">
+        <div class="modal-content card">
+            <h3>Your Profile</h3>
+            <div class="profile-avatar-section">
+                <img id="profile-avatar-preview" class="avatar-large" src="assets/img/default-user.png" alt="Profile avatar" />
+                <div class="compact-form">
+                    <label>Change avatar image
+                        <input type="file" id="profile-avatar-file" accept="image/*" />
+                    </label>
+                    <button type="button" class="btn small" id="btn-upload-avatar">Upload Image</button>
+                </div>
+            </div>
+            <form id="form-profile" class="compact-form">
+                <div class="grid-2">
+                    <label>First name
+                        <input type="text" name="first_name" />
+                    </label>
+                    <label>Last name
+                        <input type="text" name="last_name" />
+                    </label>
+                </div>
+                <label>Email
+                    <input type="email" name="email" />
+                </label>
+                <label>New password
+                    <input type="password" name="password" placeholder="Leave blank to keep current" />
+                </label>
+                <label>Avatar URL
+                    <input type="url" name="avatar_url" placeholder="https://..." />
+                </label>
+                <div class="modal-actions">
+                    <button type="button" class="btn" id="btn-cancel-profile">Cancel</button>
+                    <button type="submit" class="btn primary">Save</button>
+                </div>
+            </form>
+            <p id="profile-message" class="message hidden"></p>
+        </div>
+    </div>
+
+    <div id="modal-role" class="modal hidden">
+        <div class="modal-content card">
+            <h3>Change User Role</h3>
+            <form id="form-change-role">
+                <input type="hidden" name="user_id" />
+                <p id="modal-user-info"></p>
+                <label>New Role
+                    <select name="role" required>
+                        <option value="user">User</option>
+                        <option value="staff">Staff</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </label>
+                <div class="modal-actions">
+                    <button type="button" class="btn" id="btn-cancel-role">Cancel</button>
+                    <button type="submit" class="btn primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Book Cafe - private cubicle bookings with unlimited books and soda. Beer available in selected cubicles.</p>
+    </footer>
+</body>
+</html>
