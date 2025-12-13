@@ -392,6 +392,29 @@ function deleteUser(userId) {
 }
 
 $(function () {
+    // Verification success handler: show message and return user to login UI
+    const params = new URLSearchParams(window.location.search || "");
+    if (params.get("verified") === "1") {
+        const email = (params.get("email") || "").toString();
+        $("#section-dashboard").addClass("hidden");
+        $("#section-auth").removeClass("hidden");
+        $(".tab-btn[data-tab='login']").click();
+
+        if (email) {
+            const form = document.getElementById("form-login");
+            if (form && form.email) {
+                form.email.value = email;
+            }
+        }
+
+        showMessage($("#verify-message"), "success", "Email verified successfully! You can now log in.");
+
+        // Clean URL (remove query params)
+        try {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (e) {}
+    }
+
     restoreAuth();
 
     // Auth tabs
