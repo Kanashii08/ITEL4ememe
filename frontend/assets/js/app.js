@@ -3,7 +3,6 @@ let currentUser = null;
 let editingCubicleId = null;
 let allBookingsCache = [];
 let staffBookingsCache = [];
-let userCubiclesCache = [];
 
 function showMessage($el, type, text) {
     $el.removeClass("hidden error success").addClass(type).text(text);
@@ -88,7 +87,7 @@ function switchToDashboard() {
     } else {
         $("#dashboard-subtitle").text("Book a private cubicle and view your reservations.");
         $("#dashboard-user").removeClass("hidden");
-        loadCubiclesForUserTabs();
+        loadCubiclesForSelect();
         loadUserBookings();
     }
 }
@@ -185,34 +184,15 @@ function deleteCubicle(id) {
         });
 }
 
-function selectUserCubicle(cubicleId) {
-    const selected = userCubiclesCache.find((c) => String(c.id) === String(cubicleId));
-    if (!selected) return;
-    $("#user-cubicle-id").val(selected.id);
-    $("#user-cubicle-details").text(`${selected.description || "No description"} • ₱${parseFloat(selected.hourly_rate).toFixed(2)}/hour${selected.has_beer ? " • Beer allowed" : ""}`);
-
-    $("#user-cubicle-tabs .tab-btn").removeClass("active");
-    $(`#user-cubicle-tabs .tab-btn[data-cubicle-id='${selected.id}']`).addClass("active");
-}
-
-function loadCubiclesForUserTabs() {
+function loadCubiclesForSelect() {
     apiRequest("cubicles").then((data) => {
-        userCubiclesCache = data.cubicles || [];
-        const $tabs = $("#user-cubicle-tabs");
-        $tabs.empty();
-        if (!userCubiclesCache.length) {
-            $("#user-cubicle-details").text("No cubicles available.");
-            $("#user-cubicle-id").val("");
-            return;
-        }
-
-        userCubiclesCache.forEach((c, idx) => {
-            const active = idx === 0 ? "active" : "";
-            $tabs.append(`<button type="button" class="tab-btn ${active}" data-cubicle-id="${c.id}">${c.name}</button>`);
+        const list = data.cubicles || [];
+        const $select = $("#select-cubicle");
+        if (!$select.length) return;
+        $select.empty();
+        list.forEach((c) => {
+            $select.append(`<option value="${c.id}">${c.name} - ₱${parseFloat(c.hourly_rate).toFixed(2)}/hour</option>`);
         });
-
-        const firstId = userCubiclesCache[0].id;
-        selectUserCubicle(firstId);
     }).catch(() => {});
 }
 
@@ -562,10 +542,6 @@ $(function () {
         }).catch(() => {});
     });
 
-    $(document).on("click", "#user-cubicle-tabs .tab-btn", function () {
-        const cubicleId = $(this).data("cubicle-id");
-        selectUserCubicle(cubicleId);
-    });
 
     $("#form-change-role").on("submit", function (e) {
         e.preventDefault();
