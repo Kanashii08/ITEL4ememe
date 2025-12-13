@@ -191,12 +191,9 @@
                     <div class="card">
                         <h4>Book a Cubicle</h4>
                         <form id="form-create-booking" class="compact-form">
-                            <div class="form-row">
-                                <label>Cubicles</label>
-                                <div id="user-cubicle-tabs" class="tabs tabs-scroll"></div>
-                                <input type="hidden" name="cubicle_id" id="user-cubicle-id" required />
-                                <p id="user-cubicle-details" class="hint"></p>
-                            </div>
+                            <label>Cubicle
+                                <select name="cubicle_id" id="select-cubicle" required></select>
+                            </label>
                             <label>Start time
                                 <input type="datetime-local" name="start_time" required />
                             </label>
