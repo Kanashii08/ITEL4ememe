@@ -151,6 +151,35 @@ input:focus, select:focus {
     color: #e5e7eb;
 }
 
+.tabs.dashboard-tabs {
+    margin-bottom: 1.25rem;
+}
+
+.tabs.tabs-scroll {
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.25rem;
+}
+
+.tabs.tabs-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.tabs.tabs-scroll::-webkit-scrollbar-thumb {
+    background: rgba(75, 85, 99, 0.7);
+    border-radius: 999px;
+}
+
+.panel-content {
+    display: none;
+}
+
+.panel-content.active {
+    display: block;
+}
+
 .tab {
     display: none;
 }
@@ -194,6 +223,24 @@ input:focus, select:focus {
 .list-item {
     padding: 0.6rem 0.4rem;
     border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+}
+
+.list-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.list-item-info {
+    line-height: 1.35;
+}
+
+.list-item-actions {
+    display: inline-flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .badge {
