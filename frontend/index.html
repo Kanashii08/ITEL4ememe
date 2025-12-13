@@ -122,6 +122,25 @@
                     <div class="card">
                         <h4>User Management</h4>
                         <p class="hint">Change user roles or delete users. The primary admin cannot be deleted.</p>
+                        <form id="form-add-user" class="compact-form hidden">
+                            <div class="grid-2">
+                                <input type="text" name="first_name" placeholder="First name" required />
+                                <input type="text" name="last_name" placeholder="Last name" required />
+                            </div>
+                            <div class="grid-2">
+                                <input type="email" name="email" placeholder="Email" required />
+                                <input type="password" name="password" placeholder="Password (min 6 chars)" minlength="6" required />
+                            </div>
+                            <div class="grid-2">
+                                <select name="role" required>
+                                    <option value="user">User</option>
+                                    <option value="staff">Staff</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                                <input type="url" name="avatar_url" placeholder="Avatar URL (optional)" />
+                            </div>
+                            <button type="submit" class="btn small primary">Add user</button>
+                        </form>
                         <div id="admin-users-list" class="list"></div>
                     </div>
                 </div>
