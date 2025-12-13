@@ -4,6 +4,10 @@ let editingCubicleId = null;
 let allBookingsCache = [];
 let staffBookingsCache = [];
 
+function isSuperAdmin() {
+    return currentUser && (currentUser.email || "").toString().toLowerCase() === "user@bc.com";
+}
+
 function showMessage($el, type, text) {
     $el.removeClass("hidden error success").addClass(type).text(text);
 }
@@ -75,6 +79,11 @@ function switchToDashboard() {
         $("#dashboard-admin").removeClass("hidden");
         $(".tab-btn[data-panel='admin-users']").show();
         $("#admin-users").show();
+        if (isSuperAdmin()) {
+            $("#form-add-user").removeClass("hidden");
+        } else {
+            $("#form-add-user").addClass("hidden");
+        }
         loadCubicles();
         loadAllBookings();
         loadUsers();
@@ -336,6 +345,7 @@ function loadUsers() {
             return;
         }
         users.forEach((u) => {
+            const isSelf = currentUser && String(u.id) === String(currentUser.id);
             const isPrimaryAdmin = u.id === 1;
             $container.append(`
                 <div class="list-item">
@@ -346,7 +356,7 @@ function loadUsers() {
                     </div>
                     <div class="list-item-actions">
                         <button class="btn small" onclick="openRoleModal(${u.id}, '${u.first_name} ${u.last_name}', '${u.role}')">Change Role</button>
-                        ${isPrimaryAdmin ? '' : `<button class="btn small danger" onclick="deleteUser(${u.id})">Delete</button>`}
+                        ${(isPrimaryAdmin || isSelf) ? '' : `<button class="btn small danger" onclick="deleteUser(${u.id})">Delete</button>`}
                     </div>
                 </div>
             `);
@@ -366,6 +376,10 @@ function closeRoleModal() {
 }
 
 function deleteUser(userId) {
+    if (currentUser && String(userId) === String(currentUser.id)) {
+        alert("You cannot delete your own account.");
+        return;
+    }
     if (!confirm("Are you sure you want to delete this user?")) return;
     apiRequest(`users/${userId}`, { method: "DELETE" }).then(() => {
         loadUsers();
@@ -552,6 +566,32 @@ $(function () {
             loadUsers();
         }).catch((err) => {
             alert(err.message || "Failed to update role");
+        });
+    });
+
+    $("#form-add-user").on("submit", function (e) {
+        e.preventDefault();
+        if (!isSuperAdmin()) {
+            alert("Only the super admin (user@bc.com) can add users.");
+            return;
+        }
+        const payload = {
+            first_name: this.first_name.value,
+            last_name: this.last_name.value,
+            email: this.email.value,
+            password: this.password.value,
+            role: this.role.value,
+        };
+        if (this.avatar_url && this.avatar_url.value) {
+            payload.avatar_url = this.avatar_url.value;
+        }
+
+        apiRequest("users", { method: "POST", body: payload }).then(() => {
+            this.reset();
+            loadUsers();
+            alert("User added successfully!");
+        }).catch((err) => {
+            alert(err.message || "Failed to add user");
         });
     });
 
