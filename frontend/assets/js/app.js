@@ -496,7 +496,7 @@ $(function () {
             password: this.password.value,
         };
         apiRequest("auth/register", { method: "POST", body: payload }).then(() => {
-            showMessage($("#auth-message"), "success", "Account created! You can now log in.");
+            showMessage($("#auth-message"), "success", "Account created! Please verify your email before logging in.");
             $(".tab-btn[data-tab='login']").click();
             this.reset();
         }).catch((err) => {
