@@ -5,7 +5,7 @@ let allBookingsCache = [];
 let staffBookingsCache = [];
 
 function isSuperAdmin() {
-    return currentUser && (currentUser.email || "").toString().toLowerCase() === "user@bc.com";
+    return currentUser && (currentUser.email || "").toString().toLowerCase() === "admin@bc.com";
 }
 
 function showMessage($el, type, text) {
@@ -592,7 +592,7 @@ $(function () {
     $("#form-add-user").on("submit", function (e) {
         e.preventDefault();
         if (!isSuperAdmin()) {
-            alert("Only the super admin (user@bc.com) can add users.");
+            alert("Only the super admin (admin@bc.com) can add users.");
             return;
         }
         const payload = {
