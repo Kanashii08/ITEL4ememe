@@ -2,6 +2,8 @@ let authToken = null;
 let currentUser = null;
 let editingCubicleId = null;
 let allBookingsCache = [];
+let staffBookingsCache = [];
+let userCubiclesCache = [];
 
 function showMessage($el, type, text) {
     $el.removeClass("hidden error success").addClass(type).text(text);
@@ -79,17 +81,14 @@ function switchToDashboard() {
         loadUsers();
     } else if (role === "staff") {
         $("#dashboard-subtitle").text("Manage bookings and cubicles, and help guests.");
-        // Staff can use the same admin cubicles & bookings UI, but not Users
-        $("#dashboard-admin").removeClass("hidden");
-        $(".tab-btn[data-panel='admin-users']").hide();
-        $("#admin-users").hide();
         $("#dashboard-staff").removeClass("hidden");
+        loadCubicles();
         loadAllBookings();
-        loadCubicles(); // staff can manage cubicles too
+        loadTodayBookings();
     } else {
         $("#dashboard-subtitle").text("Book a private cubicle and view your reservations.");
         $("#dashboard-user").removeClass("hidden");
-        loadCubiclesForSelect();
+        loadCubiclesForUserTabs();
         loadUserBookings();
     }
 }
@@ -122,10 +121,15 @@ function restoreAuth() {
 function loadCubicles() {
     apiRequest("cubicles").then((data) => {
         const list = data.cubicles || [];
-        const $container = $("#admin-cubicles-list");
-        $container.empty();
+        const $adminContainer = $("#admin-cubicles-list");
+        const $staffContainer = $("#staff-cubicles-list");
+
+        if ($adminContainer.length) $adminContainer.empty();
+        if ($staffContainer.length) $staffContainer.empty();
+
         if (!list.length) {
-            $container.append("<p class='hint'>No cubicles yet. Create one above.</p>");
+            if ($adminContainer.length) $adminContainer.append("<p class='hint'>No cubicles yet. Create one above.</p>");
+            if ($staffContainer.length) $staffContainer.append("<p class='hint'>No cubicles yet. Create one above.</p>");
             return;
         }
         list.forEach((c) => {
@@ -143,7 +147,7 @@ function loadCubicles() {
                 ? `<div class="list-item-actions">${actions}</div>`
                 : "";
 
-            $container.append(`
+            const rowHtml = `
                 <div class="list-item">
                     <div class="list-item-info">
                         <strong>${c.name}</strong> - ${c.description || "No description"}<br>
@@ -151,13 +155,16 @@ function loadCubicles() {
                     </div>
                     ${actionsHtml}
                 </div>
-            `);
+            `;
+
+            if ($adminContainer.length) $adminContainer.append(rowHtml);
+            if ($staffContainer.length) $staffContainer.append(rowHtml);
         });
     }).catch(() => {});
 }
 
 function editCubicle(id, name, description, hourlyRate, hasBeer) {
-    const form = document.getElementById("form-create-cubicle");
+    const form = document.getElementById("form-create-cubicle") || document.getElementById("form-create-cubicle-staff");
     if (!form) return;
     editingCubicleId = id;
     form.name.value = name;
@@ -178,14 +185,34 @@ function deleteCubicle(id) {
         });
 }
 
-function loadCubiclesForSelect() {
+function selectUserCubicle(cubicleId) {
+    const selected = userCubiclesCache.find((c) => String(c.id) === String(cubicleId));
+    if (!selected) return;
+    $("#user-cubicle-id").val(selected.id);
+    $("#user-cubicle-details").text(`${selected.description || "No description"} • ₱${parseFloat(selected.hourly_rate).toFixed(2)}/hour${selected.has_beer ? " • Beer allowed" : ""}`);
+
+    $("#user-cubicle-tabs .tab-btn").removeClass("active");
+    $(`#user-cubicle-tabs .tab-btn[data-cubicle-id='${selected.id}']`).addClass("active");
+}
+
+function loadCubiclesForUserTabs() {
     apiRequest("cubicles").then((data) => {
-        const list = data.cubicles || [];
-        const $select = $("#select-cubicle");
-        $select.empty();
-        list.forEach((c) => {
-            $select.append(`<option value="${c.id}">${c.name} - ₱${parseFloat(c.hourly_rate).toFixed(2)}/hour</option>`);
+        userCubiclesCache = data.cubicles || [];
+        const $tabs = $("#user-cubicle-tabs");
+        $tabs.empty();
+        if (!userCubiclesCache.length) {
+            $("#user-cubicle-details").text("No cubicles available.");
+            $("#user-cubicle-id").val("");
+            return;
+        }
+
+        userCubiclesCache.forEach((c, idx) => {
+            const active = idx === 0 ? "active" : "";
+            $tabs.append(`<button type="button" class="tab-btn ${active}" data-cubicle-id="${c.id}">${c.name}</button>`);
         });
+
+        const firstId = userCubiclesCache[0].id;
+        selectUserCubicle(firstId);
     }).catch(() => {});
 }
 
@@ -260,12 +287,15 @@ function loadAllBookings() {
     apiRequest("bookings").then((data) => {
         allBookingsCache = data.bookings || [];
         applyBookingsFilter();
+        staffBookingsCache = allBookingsCache;
+        applyStaffBookingsFilter();
     }).catch(() => {});
 }
 
 function applyBookingsFilter() {
     const $input = $("#admin-bookings-search");
     const $status = $("#admin-bookings-status-filter");
+    if (!$input.length || !$status.length) return;
     const query = ($input.val() || "").toString().toLowerCase();
     const statusFilter = ($status.val() || "").toString();
     let list = allBookingsCache;
@@ -280,6 +310,28 @@ function applyBookingsFilter() {
     }
 
     renderBookings($("#admin-bookings-list"), list);
+}
+
+function applyStaffBookingsFilter() {
+    const $input = $("#staff-bookings-search");
+    const $status = $("#staff-bookings-status-filter");
+    const $list = $("#staff-bookings-all-list");
+    if (!$input.length || !$status.length || !$list.length) return;
+
+    const query = ($input.val() || "").toString().toLowerCase();
+    const statusFilter = ($status.val() || "").toString();
+    let list = staffBookingsCache;
+
+    if (query || statusFilter) {
+        list = staffBookingsCache.filter((b) => {
+            const text = `${b.cubicle_name || ""} ${b.user_name || ""} ${b.status || ""} ${b.start_time || ""}`.toLowerCase();
+            if (query && !text.includes(query)) return false;
+            if (statusFilter && b.status !== statusFilter) return false;
+            return true;
+        });
+    }
+
+    renderBookings($list, list);
 }
 
 function loadTodayBookings() {
@@ -354,13 +406,14 @@ $(function () {
         $(`#tab-${tab}`).addClass("active");
     });
 
-    // Admin dashboard tabs
-    $(".tab-btn[data-panel]").on("click", function () {
+    // Dashboard tabs (admin & staff) - scoped within the active role panel
+    $(document).on("click", ".tab-btn[data-panel]", function () {
         const panel = $(this).data("panel");
-        $(".tab-btn[data-panel]").removeClass("active");
+        const $rolePanel = $(this).closest(".role-panel");
+        $rolePanel.find(".tab-btn[data-panel]").removeClass("active");
         $(this).addClass("active");
-        $(".panel-content").removeClass("active");
-        $(`#${panel}`).addClass("active");
+        $rolePanel.find(".panel-content").removeClass("active");
+        $rolePanel.find(`#${panel}`).addClass("active");
     });
 
     $("#btn-show-login").on("click", () => {
@@ -382,9 +435,13 @@ $(function () {
         $("#modal-profile").removeClass("hidden");
     });
 
-    // All bookings search & status filter (admin & staff)
+    // Bookings search & status filter (admin)
     $("#admin-bookings-search").on("input", applyBookingsFilter);
     $("#admin-bookings-status-filter").on("change", applyBookingsFilter);
+
+    // Bookings search & status filter (staff)
+    $("#staff-bookings-search").on("input", applyStaffBookingsFilter);
+    $("#staff-bookings-status-filter").on("change", applyStaffBookingsFilter);
 
     // Close profile modal
     $("#btn-cancel-profile").on("click", () => {
@@ -458,6 +515,29 @@ $(function () {
         });
     });
 
+    $("#form-create-cubicle-staff").on("submit", function (e) {
+        e.preventDefault();
+        const payload = {
+            name: this.name.value,
+            description: this.description.value,
+            hourly_rate: this.hourly_rate.value,
+            has_beer: this.has_beer.checked ? 1 : 0,
+        };
+
+        const isEditing = editingCubicleId !== null;
+        const method = isEditing ? "PUT" : "POST";
+        const path = isEditing ? `cubicles/${editingCubicleId}` : "cubicles";
+
+        apiRequest(path, { method, body: payload }).then(() => {
+            this.reset();
+            editingCubicleId = null;
+            $(this).find("button[type='submit']").text("Add cubicle");
+            loadCubicles();
+        }).catch((err) => {
+            alert(err.message || "Failed to save cubicle");
+        });
+    });
+
     $("#form-create-booking").on("submit", function (e) {
         e.preventDefault();
         const payload = {
@@ -480,6 +560,11 @@ $(function () {
         apiRequest(`bookings/lookup?email=${encodeURIComponent(email)}`).then((data) => {
             renderBookings($("#staff-lookup-results"), data.bookings || []);
         }).catch(() => {});
+    });
+
+    $(document).on("click", "#user-cubicle-tabs .tab-btn", function () {
+        const cubicleId = $(this).data("cubicle-id");
+        selectUserCubicle(cubicleId);
     });
 
     $("#form-change-role").on("submit", function (e) {
