@@ -356,7 +356,7 @@ function loadUsers() {
                         <span>${u.email}</span>
                     </div>
                     <div class="list-item-actions">
-                        ${(isSelf || isAdminAccount) ? '' : `<button class="btn small" onclick="openRoleModal(${u.id}, '${u.first_name} ${u.last_name}', '${u.role}')">Change Role</button>`}
+                        ${(isSelf || (!isSuperAdmin() && isAdminAccount)) ? '' : `<button class="btn small" onclick="openRoleModal(${u.id}, '${u.first_name} ${u.last_name}', '${u.role}')">Change Role</button>`}
                         ${(isPrimaryAdmin || isSelf) ? '' : `<button class="btn small danger" onclick="deleteUser(${u.id})">Delete</button>`}
                     </div>
                 </div>
@@ -572,7 +572,7 @@ $(function () {
             alert("You cannot change your own role.");
             return;
         }
-        if (targetRole === "admin") {
+        if (targetRole === "admin" && !isSuperAdmin()) {
             alert("You cannot change the role of an admin account.");
             return;
         }
