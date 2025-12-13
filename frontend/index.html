@@ -81,12 +81,12 @@
 
             <div id="dashboard-admin" class="role-panel hidden">
                 <div class="tabs dashboard-tabs">
-                    <button class="tab-btn active" data-panel="admin-cubicles">Cubicles</button>
-                    <button class="tab-btn" data-panel="admin-bookings">Bookings</button>
-                    <button class="tab-btn" data-panel="admin-users">Users</button>
+                    <button class="tab-btn admin-tab-btn active" data-panel="admin-cubicles">Cubicles</button>
+                    <button class="tab-btn admin-tab-btn" data-panel="admin-bookings">Bookings</button>
+                    <button class="tab-btn admin-tab-btn" data-panel="admin-users">Users</button>
                 </div>
 
-                <div id="admin-cubicles" class="panel-content active">
+                <div id="admin-cubicles" class="panel-content panel-content-admin active">
                     <div class="card">
                         <h4>Manage Cubicles</h4>
                         <form id="form-create-cubicle" class="compact-form">
@@ -102,7 +102,7 @@
                     </div>
                 </div>
 
-                <div id="admin-bookings" class="panel-content">
+                <div id="admin-bookings" class="panel-content panel-content-admin">
                     <div class="card">
                         <h4>All Bookings</h4>
                         <div class="grid-2">
@@ -118,7 +118,7 @@
                     </div>
                 </div>
 
-                <div id="admin-users" class="panel-content">
+                <div id="admin-users" class="panel-content panel-content-admin">
                     <div class="card">
                         <h4>User Management</h4>
                         <p class="hint">Change user roles or delete users. The primary admin cannot be deleted.</p>
@@ -128,11 +128,53 @@
             </div>
 
             <div id="dashboard-staff" class="role-panel hidden">
-                <div class="grid-2">
+                <div class="tabs dashboard-tabs">
+                    <button class="tab-btn staff-tab-btn active" data-panel="staff-cubicles">Cubicles</button>
+                    <button class="tab-btn staff-tab-btn" data-panel="staff-bookings">Bookings</button>
+                    <button class="tab-btn staff-tab-btn" data-panel="staff-today">Today</button>
+                    <button class="tab-btn staff-tab-btn" data-panel="staff-lookup">Lookup</button>
+                </div>
+
+                <div id="staff-cubicles" class="panel-content panel-content-staff active">
+                    <div class="card">
+                        <h4>Manage Cubicles</h4>
+                        <form id="form-create-cubicle-staff" class="compact-form">
+                            <input type="text" name="name" placeholder="Cubicle name" required />
+                            <input type="text" name="description" placeholder="Short description" />
+                            <input type="number" name="hourly_rate" placeholder="Hourly rate (P)" min="0" step="0.01" required />
+                            <label class="inline">
+                                <input type="checkbox" name="has_beer" /> Beer available
+                            </label>
+                            <button type="submit" class="btn small primary">Add cubicle</button>
+                        </form>
+                        <div id="staff-cubicles-list" class="list"></div>
+                    </div>
+                </div>
+
+                <div id="staff-bookings" class="panel-content panel-content-staff">
+                    <div class="card">
+                        <h4>All Bookings</h4>
+                        <div class="grid-2">
+                            <input type="text" id="staff-bookings-search" placeholder="Search by user, cubicle, status, or date" class="search-input" />
+                            <select id="staff-bookings-status-filter">
+                                <option value="">All statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div id="staff-bookings-all-list" class="list"></div>
+                    </div>
+                </div>
+
+                <div id="staff-today" class="panel-content panel-content-staff">
                     <div class="card">
                         <h4>Today's Bookings</h4>
                         <div id="staff-bookings-list" class="list"></div>
                     </div>
+                </div>
+
+                <div id="staff-lookup" class="panel-content panel-content-staff">
                     <div class="card">
                         <h4>Quick Lookup by Email</h4>
                         <form id="form-staff-lookup" class="compact-form">
@@ -149,9 +191,12 @@
                     <div class="card">
                         <h4>Book a Cubicle</h4>
                         <form id="form-create-booking" class="compact-form">
-                            <label>Cubicle
-                                <select name="cubicle_id" id="select-cubicle" required></select>
-                            </label>
+                            <div class="form-row">
+                                <label>Cubicles</label>
+                                <div id="user-cubicle-tabs" class="tabs tabs-scroll"></div>
+                                <input type="hidden" name="cubicle_id" id="user-cubicle-id" required />
+                                <p id="user-cubicle-details" class="hint"></p>
+                            </div>
                             <label>Start time
                                 <input type="datetime-local" name="start_time" required />
                             </label>
