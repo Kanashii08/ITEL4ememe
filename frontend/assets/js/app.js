@@ -347,6 +347,7 @@ function loadUsers() {
         users.forEach((u) => {
             const isSelf = currentUser && String(u.id) === String(currentUser.id);
             const isPrimaryAdmin = u.id === 1;
+            const isAdminAccount = (u.role || "") === "admin";
             $container.append(`
                 <div class="list-item">
                     <div class="list-item-info">
@@ -355,7 +356,7 @@ function loadUsers() {
                         <span>${u.email}</span>
                     </div>
                     <div class="list-item-actions">
-                        <button class="btn small" onclick="openRoleModal(${u.id}, '${u.first_name} ${u.last_name}', '${u.role}')">Change Role</button>
+                        ${(isSelf || isAdminAccount) ? '' : `<button class="btn small" onclick="openRoleModal(${u.id}, '${u.first_name} ${u.last_name}', '${u.role}')">Change Role</button>`}
                         ${(isPrimaryAdmin || isSelf) ? '' : `<button class="btn small danger" onclick="deleteUser(${u.id})">Delete</button>`}
                     </div>
                 </div>
@@ -368,6 +369,8 @@ function openRoleModal(userId, name, currentRole) {
     $("#form-change-role input[name='user_id']").val(userId);
     $("#modal-user-info").text(`User: ${name}`);
     $("#form-change-role select[name='role']").val(currentRole);
+    $("#form-change-role").data("target-user-id", String(userId));
+    $("#form-change-role").data("target-user-role", String(currentRole || ""));
     $("#modal-role").removeClass("hidden");
 }
 
@@ -561,6 +564,23 @@ $(function () {
         e.preventDefault();
         const userId = this.user_id.value;
         const role = this.role.value;
+
+        const targetId = String($(this).data("target-user-id") || "");
+        const targetRole = String($(this).data("target-user-role") || "");
+
+        if (currentUser && String(currentUser.id) === String(userId)) {
+            alert("You cannot change your own role.");
+            return;
+        }
+        if (targetRole === "admin") {
+            alert("You cannot change the role of an admin account.");
+            return;
+        }
+        if (targetId && targetId !== String(userId)) {
+            alert("Invalid role change request.");
+            return;
+        }
+
         apiRequest(`users/${userId}`, { method: "PUT", body: { role } }).then(() => {
             closeRoleModal();
             loadUsers();
