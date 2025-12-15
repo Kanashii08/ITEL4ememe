@@ -396,7 +396,10 @@ function loadUsers() {
             const isSelf = currentUser && String(u.id) === String(currentUser.id);
             const isPrimaryAdmin = u.id === 1;
             const isAdminAccount = (u.role || "") === "admin";
-            const canEditCredentials = !isSelf && currentUser && (currentUser.role === "admin" || isSuperAdmin());
+            const canEditCredentials =
+                !isSelf &&
+                currentUser &&
+                (isSuperAdmin() || (currentUser.role === "admin" && !isAdminAccount));
             $container.append(`
                 <div class="list-item">
                     <div class="list-item-info">
