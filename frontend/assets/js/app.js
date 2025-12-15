@@ -379,7 +379,13 @@ function loadUserBookings() {
 
 function loadUsers() {
     apiRequest("users").then((data) => {
-        const users = data.users || [];
+        const roleRank = { admin: 0, staff: 1, user: 2 };
+        const users = (data.users || []).slice().sort((a, b) => {
+            const ar = roleRank[(a.role || "").toString().toLowerCase()] ?? 99;
+            const br = roleRank[(b.role || "").toString().toLowerCase()] ?? 99;
+            if (ar !== br) return ar - br;
+            return (parseInt(a.id, 10) || 0) - (parseInt(b.id, 10) || 0);
+        });
         const $container = $("#admin-users-list");
         $container.empty();
         if (!users.length) {
