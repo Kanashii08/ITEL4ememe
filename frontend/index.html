@@ -294,6 +294,43 @@
         </div>
     </div>
 
+    <div id="modal-edit-user" class="modal hidden">
+        <div class="modal-content card">
+            <h3>Edit User</h3>
+            <form id="form-edit-user" class="compact-form">
+                <input type="hidden" name="user_id" />
+                <div class="grid-2">
+                    <label>First name
+                        <input type="text" name="first_name" required />
+                    </label>
+                    <label>Last name
+                        <input type="text" name="last_name" required />
+                    </label>
+                </div>
+                <label>Email
+                    <input type="email" name="email" required />
+                </label>
+                <label>New password
+                    <input type="password" name="password" placeholder="Leave blank to keep current" />
+                </label>
+                <label>Avatar URL
+                    <input type="url" name="avatar_url" placeholder="https://..." />
+                </label>
+                <label>Role
+                    <select name="role" required>
+                        <option value="user">User</option>
+                        <option value="staff">Staff</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </label>
+                <div class="modal-actions">
+                    <button type="button" class="btn" id="btn-cancel-edit-user">Cancel</button>
+                    <button type="submit" class="btn primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <footer class="footer">
         <p>Book Cafe - private cubicle bookings with unlimited books and soda. Beer available in selected cubicles.</p>
     </footer>
