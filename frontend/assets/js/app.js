@@ -232,8 +232,8 @@ function renderBookings($container, bookings) {
                     <button class="btn small danger" onclick="updateBookingStatus(${b.id}, 'cancelled')">Cancel</button>
                 </div>`;
             }
-        } else if (isUser && b.status !== "confirmed") {
-            // Users can cancel their own non-confirmed bookings
+        } else if (isUser && b.status === "pending") {
+            // Users can cancel their own pending bookings
             actions = `<div class="list-item-actions">
                 <button class="btn small danger" onclick="updateBookingStatus(${b.id}, 'cancelled')">Cancel</button>
             </div>`;
@@ -270,6 +270,10 @@ function updateBookingStatus(id, status) {
             }
             if (currentUser.role === "staff") {
                 alert(`Booking ${status}`);
+            }
+            if (currentUser.role === "user" && status === "cancelled") {
+                alert("Booking cancelled successfully!");
+                loadUserBookings();
             }
         })
         .catch((err) => {
