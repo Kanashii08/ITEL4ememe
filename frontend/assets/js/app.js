@@ -211,7 +211,18 @@ function renderBookings($container, bookings) {
         $container.append("<p class='hint'>No bookings found.</p>");
         return;
     }
-    bookings.forEach((b) => {
+    const statusRank = { pending: 0, confirmed: 1, cancelled: 2 };
+    const sorted = (bookings || []).slice().sort((a, b) => {
+        const ar = statusRank[(a.status || "").toString().toLowerCase()] ?? 99;
+        const br = statusRank[(b.status || "").toString().toLowerCase()] ?? 99;
+        if (ar !== br) return ar - br;
+
+        const at = Date.parse(a.start_time || "") || 0;
+        const bt = Date.parse(b.start_time || "") || 0;
+        return bt - at;
+    });
+
+    sorted.forEach((b) => {
         const isStaffOrAdmin = currentUser && (currentUser.role === "staff" || currentUser.role === "admin");
         const isUser = currentUser && currentUser.role === "user";
 
@@ -307,7 +318,12 @@ function applyBookingsFilter() {
         });
     }
 
+    const statusRank = { pending: 0, confirmed: 1, cancelled: 2 };
     list = (list || []).slice().sort((a, b) => {
+        const ar = statusRank[(a.status || "").toString().toLowerCase()] ?? 99;
+        const br = statusRank[(b.status || "").toString().toLowerCase()] ?? 99;
+        if (ar !== br) return ar - br;
+
         const at = Date.parse(a.start_time || "") || 0;
         const bt = Date.parse(b.start_time || "") || 0;
         return bt - at;
@@ -335,7 +351,12 @@ function applyStaffBookingsFilter() {
         });
     }
 
+    const statusRank = { pending: 0, confirmed: 1, cancelled: 2 };
     list = (list || []).slice().sort((a, b) => {
+        const ar = statusRank[(a.status || "").toString().toLowerCase()] ?? 99;
+        const br = statusRank[(b.status || "").toString().toLowerCase()] ?? 99;
+        if (ar !== br) return ar - br;
+
         const at = Date.parse(a.start_time || "") || 0;
         const bt = Date.parse(b.start_time || "") || 0;
         return bt - at;
