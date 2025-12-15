@@ -239,12 +239,17 @@ function renderBookings($container, bookings) {
             </div>`;
         }
 
+        const hourly = parseFloat(b.hourly_rate || 0);
+        const total = typeof b.total_price !== "undefined" ? parseFloat(b.total_price || 0) : 0;
+
         $container.append(`
             <div class="list-item">
                 <div class="list-item-info">
                     <strong>${b.cubicle_name}</strong> - ${b.status}<br>
                     <span>${b.start_time} to ${b.end_time}</span><br>
-                    <span>${b.user_name || ""}</span>
+                    <span>${b.user_name || ""}</span><br>
+                    <span>Rate: ₱${hourly.toFixed(2)} / hour</span><br>
+                    <span>Total: ₱${total.toFixed(2)}</span>
                 </div>
                 ${actions}
             </div>
@@ -348,6 +353,7 @@ function loadUsers() {
             const isSelf = currentUser && String(u.id) === String(currentUser.id);
             const isPrimaryAdmin = u.id === 1;
             const isAdminAccount = (u.role || "") === "admin";
+            const canEditCredentials = !isSelf && currentUser && (currentUser.role === "admin" || isSuperAdmin());
             $container.append(`
                 <div class="list-item">
                     <div class="list-item-info">
@@ -356,6 +362,7 @@ function loadUsers() {
                         <span>${u.email}</span>
                     </div>
                     <div class="list-item-actions">
+                        ${canEditCredentials ? `<button class="btn small" onclick="openEditUserModal(${u.id}, '${u.first_name}', '${u.last_name}', '${u.email}', '${u.role}')">Edit</button>` : ''}
                         ${(isSelf || (!isSuperAdmin() && isAdminAccount)) ? '' : `<button class="btn small" onclick="openRoleModal(${u.id}, '${u.first_name} ${u.last_name}', '${u.role}')">Change Role</button>`}
                         ${(isPrimaryAdmin || isSelf) ? '' : `<button class="btn small danger" onclick="deleteUser(${u.id})">Delete</button>`}
                     </div>
@@ -363,6 +370,23 @@ function loadUsers() {
             `);
         });
     }).catch(() => {});
+}
+
+function openEditUserModal(id, firstName, lastName, email, role) {
+    const form = document.getElementById("form-edit-user");
+    if (!form) return;
+    form.user_id.value = id;
+    form.first_name.value = firstName || "";
+    form.last_name.value = lastName || "";
+    form.email.value = email || "";
+    form.password.value = "";
+    form.avatar_url.value = "";
+    form.role.value = role || "user";
+    $("#modal-edit-user").removeClass("hidden");
+}
+
+function closeEditUserModal() {
+    $("#modal-edit-user").addClass("hidden");
 }
 
 function openRoleModal(userId, name, currentRole) {
@@ -582,7 +606,6 @@ $(function () {
         }).catch(() => {});
     });
 
-
     $("#form-change-role").on("submit", function (e) {
         e.preventDefault();
         const userId = this.user_id.value;
@@ -639,6 +662,8 @@ $(function () {
     });
 
     $("#btn-cancel-role").on("click", closeRoleModal);
+
+    $("#btn-cancel-edit-user").on("click", closeEditUserModal);
 
     $("#form-profile").on("submit", function (e) {
         e.preventDefault();
@@ -731,6 +756,35 @@ $(function () {
             })
             .catch((err) => {
                 showMessage($msg, "error", err.message || "Failed to upload avatar");
+            });
+    });
+
+    $("#form-edit-user").on("submit", function (e) {
+        e.preventDefault();
+        const id = this.user_id.value;
+        if (!id) return;
+
+        const payload = {
+            first_name: this.first_name.value,
+            last_name: this.last_name.value,
+            email: this.email.value,
+            role: this.role.value,
+        };
+
+        if (this.password.value) {
+            payload.password = this.password.value;
+        }
+        if (this.avatar_url.value) {
+            payload.avatar_url = this.avatar_url.value;
+        }
+
+        apiRequest(`users/${id}`, { method: "PUT", body: payload })
+            .then(() => {
+                closeEditUserModal();
+                loadUsers();
+            })
+            .catch((err) => {
+                alert(err.message || "Failed to update user");
             });
     });
 });
