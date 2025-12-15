@@ -307,6 +307,12 @@ function applyBookingsFilter() {
         });
     }
 
+    list = (list || []).slice().sort((a, b) => {
+        const at = Date.parse(a.start_time || "") || 0;
+        const bt = Date.parse(b.start_time || "") || 0;
+        return bt - at;
+    });
+
     renderBookings($("#admin-bookings-list"), list);
 }
 
@@ -328,6 +334,12 @@ function applyStaffBookingsFilter() {
             return true;
         });
     }
+
+    list = (list || []).slice().sort((a, b) => {
+        const at = Date.parse(a.start_time || "") || 0;
+        const bt = Date.parse(b.start_time || "") || 0;
+        return bt - at;
+    });
 
     renderBookings($list, list);
 }
