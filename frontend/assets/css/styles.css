@@ -261,6 +261,7 @@ input:focus, select:focus {
     width: 32px;
     height: 32px;
     border-radius: 999px;
+    object-fit: cover;
 }
 
 .inline {
@@ -317,39 +318,5 @@ input:focus, select:focus {
     }
     main {
         padding-inline: 0.75rem;
-    }
-    
-    /* Profile modal adjustments for mobile */
-    .profile-avatar-section {
-        flex-direction: column;
-        text-align: center;
-        gap: 1rem;
-    }
-    
-    .modal-content {
-        margin: 1rem;
-        width: calc(100% - 2rem);
-    }
-    
-    .compact-form {
-        width: 100%;
-    }
-    
-    .avatar-large {
-        width: 96px;
-        height: 96px;
-        margin: 0 auto;
-    }
-    
-    /* Ensure buttons are full width on mobile */
-    .btn {
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
-    
-    /* Adjust grid layout for mobile */
-    .grid-2 {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
     }
 }
