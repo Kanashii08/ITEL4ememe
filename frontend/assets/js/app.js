@@ -211,7 +211,15 @@ function renderBookings($container, bookings) {
         $container.append("<p class='hint'>No bookings found.</p>");
         return;
     }
-    const statusRank = { pending: 0, confirmed: 1, cancelled: 2 };
+    
+    // Define the sort order for statuses
+    const statusRank = { 
+        pending: 0, 
+        confirmed: 1, 
+        complete: 2, 
+        cancelled: 3 
+    };
+    
     const sorted = (bookings || []).slice().sort((a, b) => {
         const ar = statusRank[(a.status || "").toString().toLowerCase()] ?? 99;
         const br = statusRank[(b.status || "").toString().toLowerCase()] ?? 99;
@@ -219,32 +227,31 @@ function renderBookings($container, bookings) {
 
         const at = Date.parse(a.start_time || "") || 0;
         const bt = Date.parse(b.start_time || "") || 0;
-        return bt - at;
+        return bt - at; // Most recent first for same status
     });
 
     sorted.forEach((b) => {
         const isStaffOrAdmin = currentUser && (currentUser.role === "staff" || currentUser.role === "admin");
         const isUser = currentUser && currentUser.role === "user";
-
+        const status = (b.status || "").toLowerCase();
         let actions = "";
 
         if (isStaffOrAdmin) {
-            // For staff/admin:
-            // - pending: show Confirm + Cancel
-            // - confirmed: only Cancel
-            // - cancelled: no buttons
-            if (b.status === "pending") {
+            if (status === "pending") {
+                // For pending: Show Confirm + Cancel buttons
                 actions = `<div class="list-item-actions">
                     <button class="btn small" onclick="updateBookingStatus(${b.id}, 'confirmed')">Confirm</button>
                     <button class="btn small danger" onclick="updateBookingStatus(${b.id}, 'cancelled')">Cancel</button>
                 </div>`;
-            } else if (b.status === "confirmed") {
+            } else if (status === "confirmed") {
+                // For confirmed: Show only Complete button
                 actions = `<div class="list-item-actions">
-                    <button class="btn small danger" onclick="updateBookingStatus(${b.id}, 'cancelled')">Cancel</button>
+                    <button class="btn small" onclick="updateBookingStatus(${b.id}, 'complete')">Mark as Complete</button>
                 </div>`;
             }
-        } else if (isUser && b.status === "pending") {
-            // Users can cancel their own pending bookings
+            // No actions for complete/cancelled statuses
+        } else if (isUser && status === "pending") {
+            // Users can only cancel their own pending bookings
             actions = `<div class="list-item-actions">
                 <button class="btn small danger" onclick="updateBookingStatus(${b.id}, 'cancelled')">Cancel</button>
             </div>`;
