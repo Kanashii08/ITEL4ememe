@@ -302,13 +302,6 @@ input:focus, select:focus {
     margin-bottom: 1rem;
 }
 
-.avatar-large {
-    width: 64px;
-    height: 64px;
-    border-radius: 999px;
-    object-fit: cover;
-}
-
 .footer {
     padding: 1.5rem;
     text-align: center;
