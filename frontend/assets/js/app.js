@@ -325,7 +325,12 @@ function applyBookingsFilter() {
         });
     }
 
-    const statusRank = { pending: 0, confirmed: 1, cancelled: 2 };
+    const statusRank = { 
+        pending: 0, 
+        confirmed: 1, 
+        complete: 2,
+        cancelled: 3 
+    };
     list = (list || []).slice().sort((a, b) => {
         const ar = statusRank[(a.status || "").toString().toLowerCase()] ?? 99;
         const br = statusRank[(b.status || "").toString().toLowerCase()] ?? 99;
@@ -358,7 +363,12 @@ function applyStaffBookingsFilter() {
         });
     }
 
-    const statusRank = { pending: 0, confirmed: 1, cancelled: 2 };
+    const statusRank = { 
+        pending: 0, 
+        confirmed: 1, 
+        complete: 2,
+        cancelled: 3 
+    };
     list = (list || []).slice().sort((a, b) => {
         const ar = statusRank[(a.status || "").toString().toLowerCase()] ?? 99;
         const br = statusRank[(b.status || "").toString().toLowerCase()] ?? 99;
