@@ -261,7 +261,6 @@ input:focus, select:focus {
     width: 32px;
     height: 32px;
     border-radius: 999px;
-    object-fit: cover;
 }
 
 .inline {
@@ -301,6 +300,13 @@ input:focus, select:focus {
     align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
+}
+
+.avatar-large {
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+    object-fit: cover;
 }
 
 .footer {
