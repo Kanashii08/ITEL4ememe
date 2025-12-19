@@ -478,6 +478,22 @@ function deleteUser(userId) {
     });
 }
 
+// Add refresh functionality
+$("#refresh-button").on("click", function(e) {
+    e.preventDefault();
+    location.reload();
+});
+
+// Add hover effect to the refresh button
+$("#refresh-button").hover(
+    function() {
+        $(this).css({"cursor": "pointer", "text-decoration": "underline"});
+    }, 
+    function() {
+        $(this).css({"cursor": "default", "text-decoration": "none"});
+    }
+);
+
 $(function () {
     // Verification success handler: show message and return user to login UI
     const params = new URLSearchParams(window.location.search || "");
